@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
 
-project(hello-grpc VERSION 0.0.1 LANGUAGES CXX)
+project(hello-grpc-server VERSION 0.0.1 LANGUAGES CXX)
 
 option(CMAKE_VERBOSE_MAKEFILE "show compilation process" ON)
 set(CMAKE_CXX_STANDARD 17)
@@ -31,13 +31,15 @@ add_custom_command(
 
 include_directories("${proto_builded}")
 
-add_executable(hello-grpc ${build_proto_cc} ${build_proto_h} ${build_grpc_cc} ${build_grpc_h} "${CMAKE_SOURCE_DIR}/main.cpp")
+add_executable(hello-grpc-server ${build_proto_cc} ${build_proto_h} ${build_grpc_cc} ${build_grpc_h} "${CMAKE_SOURCE_DIR}/main.cpp")
 
 find_package(Protobuf CONFIG REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
 
-target_link_libraries(hello-grpc
+target_link_libraries(hello-grpc-server
   PRIVATE
   protobuf::libprotobuf-lite
-  gRPC::grpc++)
+  gRPC::grpc++
+  absl::flags
+  absl::flags_parse)
 

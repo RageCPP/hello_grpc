@@ -1,9 +1,11 @@
 syntax = "proto3";
 
-message HelloRequest {
-  string name = 1;
-}
+package people;
 
-message HelloReply {
-  string signal = 1;
+message HelloRequest { string name = 1; }
+
+message HelloReply { string name = 1; }
+
+service Meet {
+  rpc SayHello(HelloRequest) returns (HelloReply) {}
 }
