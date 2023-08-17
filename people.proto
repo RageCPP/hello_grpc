@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package student;
+
+message Empty {}
+
+message AddStudentRequest {
+  string name = 1;
+  int32 age = 2;
+}
+
+message SearchAgeRequest { string name = 1; }
+
+message SearchAgeReply { int32 age = 1; }
+
+service ManagementSystem {
+  rpc AddStudent(AddStudentRequest) returns (Empty) {}
+  rpc SearchAge(SearchAgeRequest) returns (SearchAgeReply) {}
+}

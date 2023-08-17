@@ -15,12 +15,12 @@ cmake_path(APPEND dep_dir "grpc_install" OUTPUT_VARIABLE grpc_dir)
 set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${absl_dir};${protobuf_dir};${zlib_dir};${re2_dir};${grpc_dir}")
 
 cmake_path(SET proto_dir "${CMAKE_CURRENT_SOURCE_DIR}")
-cmake_path(SET proto_file "${proto_dir}/hello.proto")
-cmake_path(SET proto_builded "${CMAKE_CURRENT_BINARY_DIR}/grpc")
-cmake_path(SET build_proto_cc "${proto_builded}/hello.pb.cc")
-cmake_path(SET build_proto_h "${proto_builded}/hello.pb.h")
-cmake_path(SET build_grpc_cc "${proto_builded}/hello.grpc.pb.cc")
-cmake_path(SET build_grpc_h "${proto_builded}/hello.grpc.pb.h")
+cmake_path(SET proto_file "${proto_dir}/people.proto")
+cmake_path(SET proto_builded "${CMAKE_CURRENT_SOURCE_DIR}/grpc")
+cmake_path(SET build_proto_cc "${proto_builded}/people.pb.cc")
+cmake_path(SET build_proto_h "${proto_builded}/people.pb.h")
+cmake_path(SET build_grpc_cc "${proto_builded}/people.grpc.pb.cc")
+cmake_path(SET build_grpc_h "${proto_builded}/people.grpc.pb.h")
 cmake_path(SET _PROTOBUF_PROTOC "${dep_dir}/protobuf_install/bin/protoc")
 cmake_path(SET _GRPC_CPP_PLUGIN_EXECUTABLE "${dep_dir}/grpc_install/bin/grpc_cpp_plugin")
 add_custom_command(
@@ -31,15 +31,38 @@ add_custom_command(
 
 include_directories("${proto_builded}")
 
-add_executable(hello-grpc-server ${build_proto_cc} ${build_proto_h} ${build_grpc_cc} ${build_grpc_h} "${CMAKE_SOURCE_DIR}/main.cpp")
+list(APPEND GRPCSource ${build_proto_cc} ${build_proto_h} ${build_grpc_cc} ${build_grpc_h})
+cmake_path(SET local_server_path "${CMAKE_SOURCE_DIR}/local_server")
+cmake_path(SET remote_server_path "${CMAKE_SOURCE_DIR}/remote_server")
+cmake_path(SET cli_path "${CMAKE_SOURCE_DIR}/cli")
+add_library(grpc_lib ${GRPCSource})
+add_library(grpc_lite_lib ${GRPCSource})
+add_executable(local_server  ${GRPCSource} "${local_server_path}/main.cpp")
+add_executable(remote_server ${GRPCSource} "${remote_server_path}/main.cpp")
+add_executable(cli ${GRPCSource} "${cli_path}/main.cpp")
 
 find_package(Protobuf CONFIG REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
 
-target_link_libraries(hello-grpc-server
-  PRIVATE
-  protobuf::libprotobuf-lite
-  gRPC::grpc++
-  absl::flags
-  absl::flags_parse)
+set(_REFLECTION gRPC::grpc++_reflection)
+set(_GRPC_GRPCPP gRPC::grpc++)
+set(_PROTOBUF_LIBPROTOBUF protobuf::libprotobuf)
+set(_PROTOBUF_LIBPROTOBUF_LITE protobuf::libprotobuf-lite)
+target_link_libraries(grpc_lib
+  ${_GRPC_GRPCPP}
+  ${_REFLECTION}
+  ${_PROTOBUF_LIBPROTOBUF})
+target_link_libraries(grpc_lite_lib
+  ${_GRPC_GRPCPP}
+  ${_PROTOBUF_LIBPROTOBUF_LITE})
 
+foreach(_target local_server remote_server cli)
+  target_link_libraries(${_target}
+    PRIVATE
+    grpc_lib
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF}
+    ${_REFLECTION}
+    absl::flags
+    absl::flags_parse)
+endforeach()
