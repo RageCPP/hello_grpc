@@ -29,6 +29,10 @@
   {
     "name": "default",
     "configurePreset": "x86_64-linux-g++-Debug"
+  },
+  {
+    "name": "release",
+    "configurePreset": "x86_64-linux-g++-Release"
   }]
 }
 
