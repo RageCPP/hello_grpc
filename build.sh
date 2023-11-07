@@ -6,7 +6,7 @@ build_release_path="$build_path/release"
 build_debug_path=""
 grpc_path="$exec_path/grpc"
 
-clear() {
+clear() { 
   rm -rf "$build_path"
   rm -rf "$grpc_path"
   mkdir "$build_path"
@@ -16,18 +16,23 @@ clear() {
 
 generate_build() {
   clear
-  cmake -B "${build_release_path}" -S "${exec_path}" --preset=x86_64-linux-g++-Release
+  cmake -DCMAKE_INSTALL_PREFIX="${exec_path}" -B "${build_release_path}" -S "${exec_path}" --preset=x86_64-linux-g++-Release
 }
 
 grpc_lib_build() {
-  cmake --build "${build_path}" --target grpc_lib -- -j"$(nproc)"
+  cmake -DCMAKE_INSTALL_PREFIX="${exec_path}" --build "${build_path}" --target grpc_lib -- -j"$(nproc)"
 }
 
-grpc_lite_lib_build() {
+grpc_lite_lib() {
   export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/ragecpp/hey-cpp/ubuntu-22-04/protobuf_install/share/lib:/home/ragecpp/hey-cpp/ubuntu-22-04/grpc_install/share/lib";
   cmake --build "${build_release_path}" --target grpc_lite_lib --preset=release -- -j"$(nproc)"
+  cmake --install "${build_release_path}" 
 }
 
+link() {
+  ln -s ./libre2.so.11.0.0 ./lib/libre2.so.11
+  # ln -s 
+}
 
 cli_build() {
   cmake --build "${build_path}" --target cli -- -j"$(nproc)"
@@ -57,7 +62,7 @@ main() {
       grpc_lib_build
       ;;
     --grpc_lite_lib)
-      grpc_lite_lib_build
+      grpc_lite_lib
       ;;
     --cli)
       cli_build

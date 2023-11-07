@@ -1,8 +1,8 @@
-// #include "absl/flags/flag.h"
-// #include "absl/flags/parse.h"
+#include "absl/flags/flag.h"
+#include "absl/flags/parse.h"
 #include "people.grpc.pb.h"
 #include "people.pb.h"
-// #include <absl/flags/internal/flag.h>
+#include <absl/flags/internal/flag.h>
 #include <cstdint>
 #include <grpc/status.h>
 #include <grpc/support/log.h>
@@ -27,7 +27,7 @@ using student::ManagementSystem;
 using student::SearchAgeReply;
 using student::SearchAgeRequest;
 
-// ABSL_FLAG(std::string, target, "localhost:50051", "Server address");
+ABSL_FLAG(std::string, target, "localhost:50051", "Server address");
 
 struct Student
 {
@@ -79,8 +79,8 @@ class Cli
 
 int main(int argc, char **argv)
 {
-    // absl::ParseCommandLine(argc, argv);
-    // std::string target_str = absl::GetFlag(FLAGS_target);
+    absl::ParseCommandLine(argc, argv);
+    std::string target_str = absl::GetFlag(FLAGS_target);
     Cli cli{grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials())};
     auto age = 0;
     auto reply = cli.SearchAge("王", age);

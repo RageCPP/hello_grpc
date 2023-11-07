@@ -10,13 +10,13 @@ add_compile_options(-std=c++17)
 
 set(CMAKE_SKIP_BUILD_RPATH OFF)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
-set(CMAKE_INSTALL_RPATH "$ORIGIN/lib/")
+set(CMAKE_INSTALL_RPATH "$ORIGIN")
 # message(ORIGIN: "${CMAKE_INSTALL_RPATH}")
 
 cmake_path(SET dep_dir "/home/ragecpp/hey-cpp/ubuntu-22-04")
 cmake_path(APPEND dep_dir "abseil-cpp_install" "share" OUTPUT_VARIABLE absl_dir)
 cmake_path(APPEND dep_dir "protobuf_install" "share" OUTPUT_VARIABLE protobuf_dir)
-# cmake_path(APPEND dep_dir "zlib_install" OUTPUT_VARIABLE zlib_dir)
+cmake_path(APPEND dep_dir "zlib_install" OUTPUT_VARIABLE zlib_dir)
 cmake_path(APPEND dep_dir "re2_install" "share" OUTPUT_VARIABLE re2_dir)
 cmake_path(APPEND dep_dir "grpc_install" "share" OUTPUT_VARIABLE grpc_dir)
 
@@ -45,7 +45,7 @@ cmake_path(SET local_server_path "${CMAKE_SOURCE_DIR}/local_server")
 cmake_path(SET remote_server_path "${CMAKE_SOURCE_DIR}/remote_server")
 cmake_path(SET cli_path "${CMAKE_SOURCE_DIR}/cli")
 add_library(grpc_lib ${GRPCSource})
-add_library(grpc_lite_lib ${GRPCSource})
+add_library(grpc_lite_lib SHARED ${GRPCSource})
 add_executable(local_server  ${GRPCSource} "${local_server_path}/main.cpp")
 add_executable(remote_server ${GRPCSource} "${remote_server_path}/main.cpp")
 # add_executable(cli ${GRPCSource} "${cli_path}/main.cpp")
@@ -53,6 +53,7 @@ add_executable(cli_lite ${GRPCSource} "${cli_path}/main.cpp")
 
 find_package(Protobuf CONFIG REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
+find_package(absl CONFIG REQUIRED)
 
 set(_REFLECTION gRPC::grpc++_reflection)
 set(_GRPC_GRPCPP gRPC::grpc++)
@@ -67,6 +68,12 @@ target_link_libraries(grpc_lib
 target_link_libraries(grpc_lite_lib
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF_LITE})
+
+install(TARGETS grpc_lite_lib
+        CONFIGURATIONS Release
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(FILES "${re2_dir}/lib/libre2.so.11.0.0"
+        TYPE LIB)
 
 foreach(_target local_server remote_server)
   target_link_libraries(${_target}
@@ -83,8 +90,10 @@ foreach(_target cli_lite)
   target_link_libraries(${_target}
     PRIVATE
     grpc_lite_lib
-    ${_GRPC_GRPCPP}
-    ${_PROTOBUF_LIBPROTOBUF_LITE}
     absl::flags
     absl::flags_parse)
 endforeach()
+
+#   ${_GRPC_GRPCPP}
+#   ${_PROTOBUF_LIBPROTOBUF_LITE}
+
